@@ -1,0 +1,7 @@
+model Interest {
+  id        String   @id @default(cuid())
+  name      String
+
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id])
+}

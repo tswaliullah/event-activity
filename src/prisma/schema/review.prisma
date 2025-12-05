@@ -1,0 +1,17 @@
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int      // 1–5
+  comment   String?
+
+  eventId   String
+  hostId    String      // Review for the host
+  userId    String      // Who wrote review
+
+  event     Event       @relation(fields: [eventId], references: [id])
+//   host      User        @relation(fields: [hostId], references: [id])
+  user      User        @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, eventId]) // Prevent duplicate review
+}
