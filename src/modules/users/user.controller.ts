@@ -1,8 +1,8 @@
 import type { Request } from "express";
 import { Body, Controller, Delete, Get, Param, Post, Query, Req } from "@nestjs/common";
 import { CreateUserDto } from "./dto/create.user.dto";
-import { User } from "src/modules/users/interfaces/user.interface";
 import { UsersService } from "./user.service";
+import { User } from "src/modules/users/interfaces/user.interface";
 
 @Controller('users')
 export class UsersController {
@@ -19,7 +19,7 @@ export class UsersController {
         return this.userServices.getAllUsers();
     }
 
-    @Post()
+    @Post('/register')
     async create(@Body() createUserDto: CreateUserDto){
         const result = await this.userServices.createUser(createUserDto);
         return {

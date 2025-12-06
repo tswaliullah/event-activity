@@ -1,14 +1,148 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  // provider = "prisma-client-js"
+  provider     = "prisma-client"
+  output       = "../generated/prisma"
+  moduleFormat = "cjs"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+model User {
+  id       String   @id @default(cuid())
+  email    String   @unique
+  password String
+  role     UserRole @default(USER)
+
+  profile Profile?
+
+  eventsHosted Event[]            @relation("HostedEvents")
+  eventsJoined EventParticipant[]
+  reviews      Review[]
+  payments     Payment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Profile {
+  id       String  @id @default(cuid())
+  fullName String
+  bio      String?
+  image    String? // Cloudinary URL
+  location String?
+
+  interests Interest[]
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@map("profiles")
+}
+
+model Interest {
+  id   String @id @default(cuid())
+  name String
+
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id])
+
+  @@map("interests")
+}
+
+model Event {
+  id              String   @id @default(cuid())
+  title           String
+  type            String
+  description     String?
+  image           String? // Cloudinary
+  location        String
+  date            DateTime
+  maxParticipants Int
+  minParticipants Int?
+  fee             Float    @default(0)
+
+  status EventStatus @default(OPEN)
+
+  hostId String
+  host   User   @relation("HostedEvents", fields: [hostId], references: [id])
+
+  participants EventParticipant[]
+  reviews      Review[]
+  payments     Payment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("events")
+}
+
+model EventParticipant {
+  id       String   @id @default(cuid())
+  userId   String
+  eventId  String
+  joinedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id])
+  event Event @relation(fields: [eventId], references: [id])
+
+  @@unique([userId, eventId]) // Prevent same user joining twice
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  amount        Float
+  status        PaymentStatus @default(PENDING)
+  provider      String? // Stripe / SSLCommerz
+  transactionId String?       @unique
+
+  userId  String
+  eventId String
+
+  user  User  @relation(fields: [userId], references: [id])
+  event Event @relation(fields: [eventId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@map("payments")
+}
+
+model Review {
+  id      String  @id @default(cuid())
+  rating  Int // 1–5
+  comment String?
+
+  eventId String
+  hostId  String // Review for the host
+  userId  String // Who wrote review
+
+  event Event @relation(fields: [eventId], references: [id])
+  //   host      User        @relation(fields: [hostId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, eventId]) // Prevent duplicate review
+}
+
+enum UserRole {
+  USER
+  HOST
+  ADMIN
+}
+
+enum EventStatus {
+  OPEN
+  FULL
+  CANCELLED
+  COMPLETED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
 }

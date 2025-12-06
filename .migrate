@@ -1,0 +1,9 @@
+{
+  "lastRun": "1764964156522-create-users-table.js",
+  "migrations": [
+    {
+      "title": "1764964156522-create-users-table.js",
+      "timestamp": 1764964160174
+    }
+  ]
+}

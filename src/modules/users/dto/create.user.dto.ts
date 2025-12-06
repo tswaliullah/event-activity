@@ -1,5 +1,6 @@
 export class CreateUserDto {
-    name: string;
-    age: number;
-    bio: string
+    id: string;
+    //  @IsEmail()
+    email: string;
+    password: string;
 }
